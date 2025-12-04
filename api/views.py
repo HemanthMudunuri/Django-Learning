@@ -9,6 +9,11 @@ from rest_framework.views import APIView
 from django.http import Http404
 from rest_framework import generics, mixins, viewsets
 from django.shortcuts import get_object_or_404
+from blogs.models import Blog, Comment
+from blogs.serializers import BlogSerializer, CommentSerializer
+from .paginations import CustomPagination
+from employee.filters import EmployeeFilter
+from rest_framework.filters import SearchFilter, OrderingFilter
 
 
 @api_view(["GET", "POST"])
@@ -168,6 +173,34 @@ class EmployeeDetail(generics.RetrieveUpdateDestroyAPIView):
 #         employee.delete()
 #         return Response(status=status.HTTP_204_NO_CONTENT)
 
+
 class EmployeeViewSet(viewsets.ModelViewSet):
     queryset = Employee.objects.all()
     serializer_class = EmployeeSerializer
+    pagination_class = CustomPagination
+    filterset_class = EmployeeFilter
+
+
+class CommentsView(generics.ListCreateAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+
+
+class BlogsView(generics.ListCreateAPIView):
+    queryset = Blog.objects.all()
+    serializer_class = BlogSerializer
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ["^blog_title"]
+    ordering_fields = ["id"]
+
+
+class BlogDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Blog.objects.all()
+    serializer_class = BlogSerializer
+    lookup_field = "pk"
+
+
+class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    lookup_field = "pk"
